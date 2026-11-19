@@ -262,6 +262,7 @@ function render() {
     <td class="ina-table__cell cell-wrap">${esc(r['Lokasi Formasi'])}</td>
     <td class="ina-table__cell nowrap">${esc(r['Jenis Formasi'])}</td></tr>`).join('');
   $('empty').hidden = view.length > 0;
+  updHint();
   $('pg-info').textContent = `Halaman ${fmt.format(page)} dari ${fmt.format(pages)} · ${fmt.format(view.length)} baris`;
   const setBtn = (id, dis) => { const b = $(id); b.disabled = dis; b.classList.toggle('ina-pagination__nav-button--disabled', dis); };
   setBtn('pg-first', page <= 1); setBtn('pg-prev', page <= 1);
@@ -338,6 +339,27 @@ $('btn-clear').addEventListener('click', async () => {
   $('start-actions').hidden = !doc;
   toast('Data tersimpan sudah dihapus.');
 });
+
+// ---------------- geser tabel dengan keyboard ----------------
+// Kontainer tabel bisa difokus (Tab atau klik). Panah kiri/kanan menggeser ke samping, Home/End ke ujung kiri/kanan;
+// panah atas/bawah, PageUp/PageDown, dan spasi tetap menggulir halaman.
+const ts = $('table-scroll');
+ts.addEventListener('mousedown', (e) => {
+  if (e.target.closest('a,button,input,select,textarea')) return;
+  setTimeout(() => { ts.focus({ preventScroll: true }); ts.classList.add('is-focus'); }, 0);
+});
+ts.addEventListener('blur', () => ts.classList.remove('is-focus'));
+ts.addEventListener('keydown', (e) => {
+  if (e.target !== ts || e.altKey || e.ctrlKey || e.metaKey) return;
+  const step = e.shiftKey ? ts.clientWidth * 0.8 : 80;
+  const smooth = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  const by = { ArrowRight: step, ArrowLeft: -step }[e.key];
+  if (by) { e.preventDefault(); ts.scrollBy({ left: by, behavior: smooth }); return; }
+  if (e.key === 'Home' && ts.scrollLeft > 0) { e.preventDefault(); ts.scrollTo({ left: 0, behavior: smooth }); }
+  else if (e.key === 'End' && ts.scrollLeft < ts.scrollWidth - ts.clientWidth - 1) { e.preventDefault(); ts.scrollTo({ left: ts.scrollWidth, behavior: smooth }); }
+});
+const updHint = () => { $('scroll-hint').hidden = ts.scrollWidth <= ts.clientWidth + 1; };
+new ResizeObserver(updHint).observe(ts);
 
 let qt;
 $('q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(() => { page = 1; applyFilter(); }, 200); });

@@ -98,3 +98,10 @@ main:focus { outline: none; }
 .pager .ina-pagination { width: auto; flex: 0 1 auto; margin-left: auto; }
 .ina-table__header-cell.num { text-align: right; }
 @media (max-width: 600px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .metric { padding: 16px; } .metric .val { font-size: 24px; line-height: 32px; } }
+
+.scroll-hint { display: flex; gap: 8px; align-items: center; margin: 0; padding: 8px 24px; font-size: 12px; line-height: 16px;
+  color: var(--ina-content-secondary); border-bottom: 1px solid var(--ina-stroke-primary); }
+.ina-table:focus-visible, .ina-table.is-focus { outline: none; }
+.card--flush:has(.ina-table:focus-visible), .card--flush:has(.ina-table.is-focus) { outline: 2px solid var(--ina-primary-primary); outline-offset: 2px; }
+.card--flush:has(.ina-table:focus-visible) .scroll-hint, .card--flush:has(.ina-table.is-focus) .scroll-hint { color: var(--ina-primary-primary); background: var(--ina-primary-50); }
+@media (max-width: 1024px) { .scroll-hint { padding: 8px 16px; } }
