@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="id" data-brand="inagov" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ekstraktor Nilai SKD CPNS</title>
+<meta name="description" content="Ubah PDF hasil Seleksi Kompetensi Dasar (SKD) BKN menjadi tabel Excel atau CSV. File diproses di perangkat Anda.">
+<link rel="stylesheet" href="idds/fonts/inter.css">
+<link rel="stylesheet" href="idds/idds.css">
+<link rel="stylesheet" href="app.css">
+<link rel="icon" href="idds/icons/file-spreadsheet.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip" href="#konten">Lewati ke konten</a>
+
+<header class="topbar">
+  <div class="topbar__in">
+    <span class="ico ico--24" style="--i:url(idds/icons/file-spreadsheet.svg)" aria-hidden="true"></span>
+    <span class="topbar__title">Ekstraktor Nilai SKD</span>
+  </div>
+</header>
+
+<main id="konten" tabindex="-1">
+  <div class="phead">
+    <h1>Ekstraktor Nilai SKD CPNS</h1>
+    <p>Ubah PDF hasil SKD dari BKN menjadi tabel Excel atau CSV, lengkap dengan instansi, jabatan, lokasi, dan jenis formasi.</p>
+  </div>
+
+  <div class="ina-alert ina-alert--info" role="status">
+    <div class="ina-alert__icon"><span class="ico ico--24" style="--i:url(idds/icons/shield-lock.svg)" aria-hidden="true"></span></div>
+    <div class="ina-alert__content"><div class="ina-alert__text-section">
+      <div class="ina-alert__title">File tidak diunggah ke server</div>
+      <div class="ina-alert__description">PDF dibaca langsung di browser Anda. Progres tersimpan otomatis, jadi proses bisa dilanjutkan bila halaman tertutup.</div>
+    </div></div>
+  </div>
+
+  <!-- Langkah 1: pilih file -->
+  <section class="ina-card card" aria-labelledby="h-file">
+    <h2 id="h-file" class="card__title">1. Pilih file PDF</h2>
+    <div class="ina-file-upload">
+      <div class="ina-file-upload__dropzone" id="dropzone" role="button" tabindex="0" aria-describedby="file-help">
+        <input type="file" class="ina-file-upload__input" id="file-input" accept="application/pdf,.pdf" aria-label="Pilih file PDF hasil SKD">
+        <div class="ina-file-upload__content">
+          <div class="ina-file-upload__icon"><span class="ico ico--24" style="--i:url(idds/icons/upload.svg)" aria-hidden="true"></span></div>
+          <div class="ina-file-upload__text">
+            <div class="ina-file-upload__title">Unggah PDF hasil SKD</div>
+            <div class="ina-file-upload__description" id="file-help">Seret dan lepas ke kotak ini. Format PDF dari pengumuman BKN, ukuran berapa pun.</div>
+          </div>
+          <button type="button" class="ina-file-upload__button" id="file-btn">Pilih file</button>
+        </div>
+      </div>
+    </div>
+    <p class="field-error" id="file-error" role="alert" hidden></p>
+
+    <div class="fileinfo" id="fileinfo" hidden>
+      <span class="ico ico--24 fileinfo__ico" style="--i:url(idds/icons/file-type-pdf.svg)" aria-hidden="true"></span>
+      <div class="fileinfo__text"><b id="fi-name">-</b><span id="fi-meta">-</span></div>
+    </div>
+
+    <div class="ina-alert ina-alert--caution" id="resume-box" role="status" hidden>
+      <div class="ina-alert__icon"><span class="ico ico--24" style="--i:url(idds/icons/clock.svg)" aria-hidden="true"></span></div>
+      <div class="ina-alert__content"><div class="ina-alert__text-section">
+        <div class="ina-alert__title">Ada progres tersimpan untuk file ini</div>
+        <div class="ina-alert__description" id="resume-text">-</div>
+      </div></div>
+    </div>
+
+    <div class="actions" id="start-actions" hidden>
+      <button type="button" class="ina-button ina-button--secondary ina-button--md" id="btn-restart" hidden>
+        <span class="ico ico--20" style="--i:url(idds/icons/refresh.svg)" aria-hidden="true"></span>Mulai dari awal</button>
+      <button type="button" class="ina-button ina-button--primary ina-button--md" id="btn-start">
+        <span class="ico ico--20" style="--i:url(idds/icons/player-play.svg)" aria-hidden="true"></span><span id="btn-start-label">Mulai ekstrak</span></button>
+    </div>
+  </section>
+
+  <!-- Langkah 2: proses -->
+  <section class="ina-card card" id="sec-progress" aria-labelledby="h-progress" hidden>
+    <h2 id="h-progress" class="card__title">2. Proses ekstrak</h2>
+    <div class="prog__row">
+      <span id="prog-text" aria-live="polite">Menyiapkan…</span>
+      <span id="prog-pct" class="num">0%</span>
+    </div>
+    <div class="ina-progress-bar ina-progress-bar--height-md" role="progressbar" aria-labelledby="h-progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="prog-bar">
+      <div class="ina-progress-bar__fill ina-progress-bar__fill--primary" id="prog-fill" style="width:0%"></div>
+    </div>
+    <div class="prog__meta"><span id="prog-rows">0 peserta</span><span id="prog-eta"></span></div>
+    <div class="actions">
+      <button type="button" class="ina-button ina-button--secondary ina-button--md" id="btn-pause">
+        <span class="ico ico--20" style="--i:url(idds/icons/player-pause.svg)" aria-hidden="true"></span>Jeda</button>
+    </div>
+  </section>
+
+  <!-- Langkah 3: hasil -->
+  <section id="sec-result" aria-labelledby="h-result" hidden>
+    <div class="rhead">
+      <div>
+        <h2 id="h-result" class="rhead__title">3. Hasil ekstrak</h2>
+        <p class="muted" id="result-sub">-</p>
+      </div>
+      <div class="actions actions--top">
+        <button type="button" class="ina-button ina-button--secondary ina-button--md" id="btn-csv">
+          <span class="ico ico--20" style="--i:url(idds/icons/file-text.svg)" aria-hidden="true"></span>Unduh CSV</button>
+        <button type="button" class="ina-button ina-button--primary ina-button--md" id="btn-xlsx">
+          <span class="ico ico--20" style="--i:url(idds/icons/download.svg)" aria-hidden="true"></span>Unduh Excel</button>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="ina-card metric"><span class="lbl">Peserta</span><span class="val num-l" id="m-rows">0</span><span class="note">Baris data dari tabel nilai</span></div>
+      <div class="ina-card metric"><span class="lbl">Formasi</span><span class="val num-l" id="m-formasi">0</span><span class="note">Kombinasi jabatan, lokasi, dan jenis</span></div>
+      <div class="ina-card metric"><span class="lbl">Keterangan P/L</span><span class="val num-l" id="m-pl">0</span><span class="note" id="m-pl-note">Memenuhi nilai ambang batas dan lolos</span></div>
+      <div class="ina-card metric"><span class="lbl">Halaman diproses</span><span class="val num-l" id="m-pages">0</span><span class="note" id="m-pages-note">-</span></div>
+    </div>
+
+    <div class="ina-card card card--flush">
+      <div class="tools">
+        <div class="ina-text-field tools__search">
+          <label class="ina-text-field__label" for="q">Cari data</label>
+          <div class="ina-text-field__wrapper ina-text-field__wrapper--size-md">
+            <span class="ico ico--20 tf-ico" style="--i:url(idds/icons/search.svg)" aria-hidden="true"></span>
+            <input type="search" id="q" class="ina-text-field__input" placeholder="Nama, nomor peserta, jabatan, atau lokasi" autocomplete="off">
+          </div>
+        </div>
+        <div class="ina-text-field tools__filter">
+          <label class="ina-text-field__label" for="f-ket">Keterangan</label>
+          <div class="ina-text-field__wrapper ina-text-field__wrapper--size-md">
+            <select id="f-ket" class="ina-text-field__input select">
+              <option value="">Semua</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="ina-table" data-initialized="true">
+        <table class="ina-table__container">
+          <thead class="ina-table__header"><tr>
+            <th class="ina-table__header-cell num">No</th>
+            <th class="ina-table__header-cell">No peserta</th>
+            <th class="ina-table__header-cell">Nama</th>
+            <th class="ina-table__header-cell">Pendidikan</th>
+            <th class="ina-table__header-cell num">TWK</th>
+            <th class="ina-table__header-cell num">TIU</th>
+            <th class="ina-table__header-cell num">TKP</th>
+            <th class="ina-table__header-cell num">Total</th>
+            <th class="ina-table__header-cell">Keterangan</th>
+            <th class="ina-table__header-cell">Jabatan formasi</th>
+            <th class="ina-table__header-cell">Lokasi formasi</th>
+            <th class="ina-table__header-cell">Jenis</th>
+          </tr></thead>
+          <tbody class="ina-table__body" id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty" hidden>
+        <span class="ico ico--64" style="--i:url(idds/icons/search.svg)" aria-hidden="true"></span>
+        <b>Data tidak ditemukan</b><span class="muted">Coba kata kunci lain atau ubah filter keterangan.</span>
+      </div>
+      <div class="pager">
+        <div class="pager__size">
+          <label for="pg-size">Baris per halaman</label>
+          <select id="pg-size" class="select select--sm"><option>20</option><option>50</option><option>100</option></select>
+        </div>
+        <div class="ina-pagination">
+          <div class="ina-pagination__nav-container">
+            <div class="ina-pagination__page-info" id="pg-info">Halaman 1 dari 1</div>
+            <div class="ina-pagination__nav-buttons">
+              <button type="button" class="ina-pagination__nav-button" id="pg-first" aria-label="Halaman pertama"><span class="ico ico--16" style="--i:url(idds/icons/chevrons-left.svg)" aria-hidden="true"></span></button>
+              <button type="button" class="ina-pagination__nav-button" id="pg-prev" aria-label="Halaman sebelumnya"><span class="ico ico--16" style="--i:url(idds/icons/chevron-left.svg)" aria-hidden="true"></span></button>
+              <button type="button" class="ina-pagination__nav-button" id="pg-next" aria-label="Halaman berikutnya"><span class="ico ico--16" style="--i:url(idds/icons/chevron-right.svg)" aria-hidden="true"></span></button>
+              <button type="button" class="ina-pagination__nav-button" id="pg-last" aria-label="Halaman terakhir"><span class="ico ico--16" style="--i:url(idds/icons/chevrons-right.svg)" aria-hidden="true"></span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions actions--left">
+      <button type="button" class="ina-button ina-button--tertiary ina-button--md" id="btn-clear">
+        <span class="ico ico--20" style="--i:url(idds/icons/trash.svg)" aria-hidden="true"></span>Hapus data tersimpan</button>
+    </div>
+  </section>
+
+  <footer class="foot muted">
+    Mendukung format PDF "Hasil Seleksi Kompetensi Dasar Pengadaan CPNS" dari SSCASN BKN. Hasil diekstrak otomatis; periksa kembali sebelum dipakai untuk keperluan resmi.
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="vendor/xlsx.full.min.js" defer></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

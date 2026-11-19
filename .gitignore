@@ -1,0 +1,4 @@
+samples/
+tools/node_modules/
+.venv/
+*.pdf
